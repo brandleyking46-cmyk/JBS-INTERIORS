@@ -7,9 +7,10 @@
 4. You'll get a live URL like `jbs-interiors.vercel.app` you can send to the client.
 
 ## Login (demo only)
-- Email: emma@gmail.com
-- Password: 1234
-- This is a front-end-only check for demo purposes — it is not real authentication.
+- Manager account: emma@gmail.com / 1234
+- Once signed in as manager, use "Users & Staff" to add staff accounts (e.g. Project Coordinator, Site Supervisor) with their own email/password.
+- Staff accounts can use Quotations, Materials, Projects and the transaction ledger, but net profit figures and the Users & Staff page stay manager-only.
+- This is a front-end-only check for demo purposes — it is not real authentication, and passwords are stored in plain text in the browser. Do not use real passwords.
 
 ## Important: data storage
 This version saves data in the browser's local storage, so it works standalone once deployed.
