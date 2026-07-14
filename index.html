@@ -1109,9 +1109,8 @@ function handleLogout(){
 
 /* ============ INIT ============ */
 async function initApp(){
-  renderNav();
   await loadAll();
-  renderAll();
+  goTo(currentPage);
 }
 
 </script>
