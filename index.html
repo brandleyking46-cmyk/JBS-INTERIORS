@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JBS Interiors — Project & Finance System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#b8935a;
+    --gold-dark:#8f6f3e;
+    --gold-light:#e3c691;
+    --ink:#2a2520;
+    --ink-soft:#5a5248;
+    --cream:#fbf8f3;
+    --cream-deep:#f1eae0;
+    --line:#e4dac9;
+    --sage:#748363;
+    --sage-bg:#eef1e9;
+    --rust:#b5654a;
+    --rust-bg:#f7e9e4;
+    --white:#ffffff;
+    --radius:10px;
+    --shadow:0 2px 10px rgba(42,37,32,0.06);
+    --shadow-lg:0 8px 30px rgba(42,37,32,0.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);}
+  h1,h2,h3,.display{font-family:'Cormorant Garamond',serif;}
+  ::selection{background:var(--gold-light);}
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+
+  /* ---- Layout ---- */
+  #app{display:flex;min-height:100vh;}
+  .sidebar{
+    width:250px;flex-shrink:0;background:linear-gradient(180deg,#2a2520,#221e19);
+    color:#efe8db;display:flex;flex-direction:column;padding:26px 18px;
+    position:sticky;top:0;height:100vh;
+  }
+  .brand{display:flex;align-items:center;gap:12px;padding:0 6px 22px 6px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:18px;}
+  .brand-badge{
+    width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, var(--gold-dark));
+    display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:15px;color:#2a2520;letter-spacing:0.5px;flex-shrink:0;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .brand-text .name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:1px;line-height:1.1;color:#f6f1e7;}
+  .brand-text .sub{font-size:9px;letter-spacing:3px;color:var(--gold-light);text-transform:uppercase;}
+
+  nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;
+    color:#cfc6b6;font-size:13.5px;font-weight:500;background:none;border:none;text-align:left;
+    transition:background .15s ease,color .15s ease;
+  }
+  .nav-item .ic{width:18px;height:18px;flex-shrink:0;opacity:0.85;}
+  .nav-item:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .nav-item.active{background:linear-gradient(90deg, rgba(184,147,90,0.25), rgba(184,147,90,0.05));color:#fff;box-shadow:inset 3px 0 0 var(--gold);}
+  .sidebar-foot{font-size:10.5px;color:#8a8172;padding:14px 8px 4px;border-top:1px solid rgba(255,255,255,0.08);margin-top:10px;letter-spacing:0.3px;}
+
+  main{flex:1;padding:32px 40px;max-width:1240px;}
+  .page{display:none;}
+  .page.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .page-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:26px;gap:20px;flex-wrap:wrap;}
+  .page-head h1{font-size:30px;margin:0 0 4px;font-weight:600;}
+  .page-head .eyebrow{font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold-dark);font-weight:600;margin-bottom:6px;}
+  .page-head p{margin:0;color:var(--ink-soft);font-size:14px;}
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:8px;border:none;
+    font-size:13.5px;font-weight:600;background:var(--ink);color:#fff;transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{box-shadow:var(--shadow-lg);transform:translateY(-1px);}
+  .btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:#2a2520;}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.danger{background:var(--rust-bg);color:var(--rust);}
+  .btn.sm{padding:6px 12px;font-size:12.5px;}
+
+  /* Cards & grid */
+  .grid{display:grid;gap:18px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr);}
+  @media(max-width:1050px){.grid.cols-4{grid-template-columns:repeat(2,1fr);} .grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);}
+  .stat-card{position:relative;overflow:hidden;}
+  .stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink-soft);font-weight:600;margin-bottom:10px;}
+  .stat-card .value{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:var(--ink);}
+  .stat-card .delta{font-size:12px;margin-top:6px;color:var(--sage);font-weight:600;}
+  .stat-card .delta.neg{color:var(--rust);}
+  .stat-card .ring{position:absolute;right:-14px;top:-14px;width:70px;height:70px;border-radius:50%;border:8px solid var(--cream-deep);opacity:0.6;}
+
+  .section-title{font-size:19px;font-weight:600;margin:34px 0 14px;display:flex;align-items:center;gap:10px;}
+  .section-title .line{flex:1;height:1px;background:var(--line);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  thead th{
+    text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--ink-soft);
+    padding:10px 12px;border-bottom:1px solid var(--line);font-weight:700;
+  }
+  tbody td{padding:12px;border-bottom:1px solid var(--cream-deep);vertical-align:middle;}
+  tbody tr:hover{background:var(--cream-deep);}
+  .table-wrap{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
+  .empty-row td{color:var(--ink-soft);text-align:center;padding:34px;font-style:italic;}
+
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:0.3px;}
+  .badge.gold{background:#f3e6cb;color:var(--gold-dark);}
+  .badge.sage{background:var(--sage-bg);color:var(--sage);}
+  .badge.rust{background:var(--rust-bg);color:var(--rust);}
+  .badge.grey{background:#ece7de;color:var(--ink-soft);}
+
+  .progress-track{width:100%;height:7px;background:var(--cream-deep);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-dark));border-radius:6px;}
+
+  /* Forms / Modal */
+  .modal-overlay{position:fixed;inset:0;background:rgba(30,26,20,0.45);display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;z-index:100;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--white);border-radius:14px;width:100%;max-width:600px;padding:28px 30px 30px;box-shadow:var(--shadow-lg);}
+  .modal.wide{max-width:760px;}
+  .modal h2{margin:0 0 4px;font-size:23px;}
+  .modal .modal-sub{color:var(--ink-soft);font-size:13px;margin-bottom:20px;}
+  .modal-close{float:right;background:none;border:none;font-size:20px;color:var(--ink-soft);}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;letter-spacing:0.3px;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:13.5px;font-family:inherit;background:var(--cream);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);background:#fff;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .field-row.three{grid-template-columns:1fr 1fr 1fr;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;}
+  .autocomplete-box{position:relative;}
+  .autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow-lg);z-index:20;max-height:200px;overflow-y:auto;display:none;}
+  .autocomplete-list.active{display:block;}
+  .autocomplete-list div{padding:9px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--cream-deep);}
+  .autocomplete-list div:hover{background:var(--cream-deep);}
+  .autocomplete-list div small{display:block;color:var(--ink-soft);font-size:11px;}
+
+  .line-items{border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:6px;}
+  .line-items table{font-size:13px;}
+  .line-items input{border:none;background:transparent;padding:7px 5px;width:100%;font-size:13px;}
+  .line-items input:focus{outline:1px solid var(--gold);border-radius:4px;}
+  .li-remove{background:none;border:none;color:var(--rust);font-size:16px;}
+  .li-total-row td{font-weight:700;background:var(--cream-deep);}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+  .toolbar input[type=text],.toolbar select{padding:9px 12px;border:1px solid var(--line);border-radius:7px;font-size:13px;background:#fff;}
+  .toolbar .spacer{flex:1;}
+  .search-wide{min-width:230px;}
+
+  .tag-tab{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
+  .tag-tab button{padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .tag-tab button.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+  .client-history{background:var(--cream-deep);border-radius:8px;padding:12px 14px;margin-top:8px;font-size:12.5px;color:var(--ink-soft);}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:13px 20px;border-radius:8px;font-size:13.5px;box-shadow:var(--shadow-lg);z-index:200;opacity:0;transform:translateY(10px);transition:all .25s ease;pointer-events:none;}
+  .toast.show{opacity:1;transform:none;}
+
+  .feature-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1px solid var(--line);border-radius:9px;margin-bottom:10px;background:#fff;}
+  .feature-item .fi-left{display:flex;align-items:center;gap:12px;}
+  .feature-item .fi-icon{width:34px;height:34px;border-radius:8px;background:var(--cream-deep);display:flex;align-items:center;justify-content:center;color:var(--gold-dark);font-weight:700;}
+  .switch{position:relative;width:40px;height:22px;background:var(--line);border-radius:20px;transition:.2s;flex-shrink:0;}
+  .switch::after{content:'';position:absolute;top:2px;left:2px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 2px rgba(0,0,0,0.3);}
+  .switch.on{background:var(--sage);}
+  .switch.on::after{left:20px;}
+
+  .link-btn{background:none;border:none;color:var(--gold-dark);font-weight:600;font-size:12.5px;text-decoration:underline;padding:0;}
+  .muted{color:var(--ink-soft);}
+  .right{text-align:right;}
+  .center{text-align:center;}
+  .mini-note{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .divider{height:1px;background:var(--line);margin:18px 0;}
+  .icon-btn{background:none;border:none;color:var(--ink-soft);padding:5px;border-radius:6px;font-size:14px;}
+  .icon-btn:hover{background:var(--cream-deep);color:var(--ink);}
+
+  /* ---- Login ---- */
+  #login-screen{
+    position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 30% 20%, #3a3226, #1c1813 75%);padding:20px;
+  }
+  .login-card{background:var(--cream);border-radius:16px;padding:40px 36px 34px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.45);text-align:center;}
+  .login-badge{
+    width:64px;height:64px;border-radius:50%;margin:0 auto 16px;
+    background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, var(--gold-dark));
+    display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:21px;color:#2a2520;
+    box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  }
+  .login-card h1{font-size:24px;margin:0 0 4px;}
+  .login-card p.sub{color:var(--ink-soft);font-size:13px;margin:0 0 24px;}
+  .login-card .field{text-align:left;}
+  .login-error{color:var(--rust);font-size:12.5px;margin:-6px 0 12px;min-height:16px;font-weight:600;}
+  .login-card .btn{width:100%;justify-content:center;margin-top:6px;}
+  .login-demo-note{margin-top:18px;font-size:11.5px;color:var(--ink-soft);background:var(--cream-deep);border-radius:8px;padding:10px 12px;}
+  #app{display:none;}
+  #app.unlocked{display:flex;}
+  .logout-btn{background:none;border:none;color:#cfc6b6;font-size:11.5px;text-decoration:underline;padding:0;margin-top:8px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-badge">JBS</div>
+    <h1>JBS Interiors</h1>
+    <p class="sub">Sign in to Project Control</p>
+    <form id="login-form" onsubmit="return handleLogin(event)">
+      <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@email.com" autocomplete="username" required></div>
+      <div class="field"><label>Password</label><input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required></div>
+      <div class="login-error" id="login-error"></div>
+      <button type="submit" class="btn gold">Sign in</button>
+    </form>
+    <div class="login-demo-note">Demo access — email <b>emma@gmail.com</b>, password <b>1234</b></div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="brand-badge">JBS</div>
+      <div class="brand-text">
+        <div class="name">JBS Interiors</div>
+        <div class="sub">Project Control</div>
+      </div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">Signed in as <span id="current-user"></span><br>Data is saved in this browser only.
+      <br><button class="logout-btn" onclick="handleLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="page" id="page-dashboard">
+      <div class="page-head">
+        <div><div class="eyebrow">Overview</div><h1>Dashboard</h1><p>A live snapshot of every project's money and progress.</p></div>
+      </div>
+      <div class="grid cols-4" id="dash-stats"></div>
+
+      <div class="section-title"><span>Active projects</span><span class="line"></span></div>
+      <div id="dash-projects" class="grid cols-3"></div>
+
+      <div class="section-title"><span>Recent activity</span><span class="line"></span></div>
+      <div class="grid cols-2">
+        <div>
+          <h3 style="margin:0 0 10px;font-size:15px;">Latest quotations</h3>
+          <div class="table-wrap"><table><thead><tr><th>Client</th><th>No.</th><th>Amount</th><th>Status</th></tr></thead><tbody id="dash-quotes"></tbody></table></div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 10px;font-size:15px;">Latest transactions</h3>
+          <div class="table-wrap"><table><thead><tr><th>Project</th><th>Type</th><th>Amount</th><th>Date</th></tr></thead><tbody id="dash-tx"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUOTATIONS -->
+    <section class="page" id="page-quotations">
+      <div class="page-head">
+        <div><div class="eyebrow">Clients & Quotations</div><h1>Quotation Module</h1><p>Look up a returning client instantly, or create a new one on the fly.</p></div>
+        <button class="btn gold" onclick="openQuoteModal()">+ New quotation</button>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="quote-search" placeholder="Search by client name or quotation no..." class="search-wide" oninput="renderQuotations()">
+        <select id="quote-filter" onchange="renderQuotations()">
+          <option value="">All statuses</option>
+          <option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option>
+        </select>
+        <div class="spacer"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Quote No.</th><th>Client</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+          <tbody id="quotations-body"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title"><span>Clients on file</span><span class="line"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Quotations</th><th>Projects</th><th></th></tr></thead>
+          <tbody id="clients-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MATERIALS -->
+    <section class="page" id="page-materials">
+      <div class="page-head">
+        <div><div class="eyebrow">Site & Supplies</div><h1>Project Materials</h1><p>Every material bought or used, tied to the project it belongs to.</p></div>
+        <button class="btn gold" onclick="openMaterialModal()">+ Log material</button>
+      </div>
+      <div class="toolbar">
+        <select id="mat-project-filter" onchange="renderMaterials()"><option value="">All projects</option></select>
+        <input type="text" id="mat-search" placeholder="Search materials..." class="search-wide" oninput="renderMaterials()">
+        <div class="spacer"></div>
+        <div class="badge gold" id="mat-total-badge">Total: 0</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Project</th><th>Material</th><th>Qty</th><th>Unit Cost</th><th>Total</th><th>Supplier</th><th></th></tr></thead>
+          <tbody id="materials-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FINANCIALS -->
+    <section class="page" id="page-financials">
+      <div class="page-head">
+        <div><div class="eyebrow">Cash Flow</div><h1>Financial Management</h1><p>Every shilling in and out, and what each project still owes or is owed.</p></div>
+        <button class="btn gold" onclick="openTxModal()">+ Record transaction</button>
+      </div>
+      <div class="grid cols-4" id="fin-stats"></div>
+
+      <div class="section-title"><span>Project balances</span><span class="line"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Project</th><th>Quoted Value</th><th>Received</th><th>Spent (materials + other)</th><th>Outstanding</th><th>Profit</th></tr></thead>
+          <tbody id="fin-balances-body"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title"><span>Transaction ledger</span><span class="line"></span></div>
+      <div class="toolbar">
+        <select id="tx-project-filter" onchange="renderTransactions()"><option value="">All projects</option></select>
+        <select id="tx-type-filter" onchange="renderTransactions()"><option value="">All types</option><option>Income</option><option>Expense</option></select>
+        <div class="spacer"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Project</th><th>Type</th><th>Category</th><th>Description</th><th>Amount</th><th></th></tr></thead>
+          <tbody id="tx-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="page" id="page-projects">
+      <div class="page-head">
+        <div><div class="eyebrow">Delivery</div><h1>Project Management</h1><p>Track status and progress across every job on the books.</p></div>
+        <button class="btn gold" onclick="openProjectModal()">+ New project</button>
+      </div>
+      <div class="tag-tab" id="project-status-tabs"></div>
+      <div class="grid cols-3" id="projects-grid"></div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="page" id="page-reports">
+      <div class="page-head">
+        <div><div class="eyebrow">Insight</div><h1>Reports Dashboard</h1><p>Summaries across quotations, materials, cash flow and profit.</p></div>
+      </div>
+      <div class="grid cols-4" id="report-stats"></div>
+
+      <div class="section-title"><span>Profitability by project</span><span class="line"></span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Project</th><th>Quoted</th><th>Material Cost</th><th>Other Expense</th><th>Income Received</th><th>Net Profit</th><th>Margin</th></tr></thead>
+          <tbody id="report-profit-body"></tbody>
+        </table>
+      </div>
+
+      <div class="section-title"><span>Quotation conversion</span><span class="line"></span></div>
+      <div class="grid cols-4" id="report-quote-stats"></div>
+
+      <div class="section-title"><span>Top materials by spend</span><span class="line"></span></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Material</th><th>Total Qty (mixed units)</th><th>Total Spend</th></tr></thead><tbody id="report-materials-body"></tbody></table>
+      </div>
+    </section>
+
+    <!-- SETTINGS / FEATURES -->
+    <section class="page" id="page-settings">
+      <div class="page-head">
+        <div><div class="eyebrow">Grow the system</div><h1>Features & Modules</h1><p>Turn on modules as the business grows. All data stays in one place.</p></div>
+      </div>
+      <div id="features-list"></div>
+      <div class="card" style="margin-top:20px;">
+        <h3 style="margin-top:0;">Suggest a new module</h3>
+        <p class="muted" style="font-size:13px;">Have an idea — subcontractor tracking, staff payroll, supplier database, e-signatures on quotations? Note it here so it isn't lost.</p>
+        <textarea id="feature-suggestion" rows="3" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:7px;font-family:inherit;" placeholder="e.g. Add a supplier database with contact details and price history"></textarea>
+        <div style="margin-top:10px;"><button class="btn ghost" onclick="saveSuggestion()">Save note</button></div>
+        <div id="suggestions-list" style="margin-top:14px;"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modal-quote">
+  <div class="modal wide">
+    <button class="modal-close" onclick="closeModal('modal-quote')">×</button>
+    <h2>New Quotation</h2>
+    <div class="modal-sub">Search the client name first — if they've quoted with you before, we'll pull them up.</div>
+    <div class="field autocomplete-box">
+      <label>Client name</label>
+      <input type="text" id="q-client-name" placeholder="Start typing a name..." oninput="clientAutocomplete()" autocomplete="off">
+      <div class="autocomplete-list" id="q-client-list"></div>
+      <div id="q-client-history"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Phone</label><input type="text" id="q-client-phone" placeholder="+254..."></div>
+      <div class="field"><label>Email</label><input type="text" id="q-client-email" placeholder="client@email.com"></div>
+    </div>
+    <div class="field"><label>Site / project address</label><input type="text" id="q-client-address"></div>
+
+    <div class="field-row">
+      <div class="field"><label>Quotation date</label><input type="date" id="q-date"></div>
+      <div class="field"><label>Status</label><select id="q-status"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option></select></div>
+    </div>
+
+    <label style="font-size:12px;font-weight:600;color:var(--ink-soft);">Line items</label>
+    <div class="line-items">
+      <table>
+        <thead><tr><th style="width:44%">Description</th><th style="width:14%">Qty</th><th style="width:20%">Unit Price</th><th style="width:18%">Total</th><th style="width:4%"></th></tr></thead>
+        <tbody id="q-items-body"></tbody>
+        <tfoot><tr class="li-total-row"><td colspan="3" class="right">Grand total</td><td id="q-grand-total">0</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <button class="link-btn" onclick="addQuoteItemRow()">+ Add line item</button>
+    <div class="field" style="margin-top:14px;"><label>Notes</label><textarea id="q-notes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modal-quote')">Cancel</button>
+      <button class="btn gold" onclick="saveQuotation()">Save quotation</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-material">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-material')">×</button>
+    <h2>Log Material</h2>
+    <div class="modal-sub">Record what was bought or used on site.</div>
+    <div class="field"><label>Project</label><select id="m-project"></select></div>
+    <div class="field-row">
+      <div class="field"><label>Material name</label><input type="text" id="m-name" placeholder="e.g. Gypsum board 12mm"></div>
+      <div class="field"><label>Date</label><input type="date" id="m-date"></div>
+    </div>
+    <div class="field-row three">
+      <div class="field"><label>Quantity</label><input type="number" id="m-qty" value="1" step="any"></div>
+      <div class="field"><label>Unit</label><input type="text" id="m-unit" placeholder="pcs / m² / box"></div>
+      <div class="field"><label>Unit cost (KSh)</label><input type="number" id="m-cost" value="0" step="any"></div>
+    </div>
+    <div class="field"><label>Supplier</label><input type="text" id="m-supplier"></div>
+    <div class="field"><label>Notes</label><input type="text" id="m-notes"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modal-material')">Cancel</button>
+      <button class="btn gold" onclick="saveMaterial()">Save material</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-tx')">×</button>
+    <h2>Record Transaction</h2>
+    <div class="modal-sub">Log money coming in or going out.</div>
+    <div class="field-row">
+      <div class="field"><label>Type</label><select id="t-type"><option>Income</option><option>Expense</option></select></div>
+      <div class="field"><label>Project</label><select id="t-project"><option value="">General / overhead</option></select></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Amount (KSh)</label><input type="number" id="t-amount" value="0" step="any"></div>
+      <div class="field"><label>Date</label><input type="date" id="t-date"></div>
+    </div>
+    <div class="field"><label>Category</label><input type="text" id="t-category" placeholder="e.g. Client payment, Labour, Fuel, Rent"></div>
+    <div class="field"><label>Description</label><input type="text" id="t-desc"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modal-tx')">Cancel</button>
+      <button class="btn gold" onclick="saveTransaction()">Save transaction</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-project')">×</button>
+    <h2>New Project</h2>
+    <div class="modal-sub">Link it to a client and, if it exists, an accepted quotation.</div>
+    <div class="field"><label>Project name</label><input type="text" id="p-name" placeholder="e.g. Al Barsha Villa — Full Interior Fit-out"></div>
+    <div class="field"><label>Client</label><select id="p-client"></select></div>
+    <div class="field"><label>Link a quotation (optional)</label><select id="p-quote"><option value="">None</option></select></div>
+    <div class="field-row">
+      <div class="field"><label>Start date</label><input type="date" id="p-start"></div>
+      <div class="field"><label>Budget (KSh)</label><input type="number" id="p-budget" value="0" step="any"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Status</label><select id="p-status"><option>Planning</option><option>In Progress</option><option>On Hold</option><option>Completed</option></select></div>
+      <div class="field"><label>Progress (%)</label><input type="number" id="p-progress" value="0" min="0" max="100"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modal-project')">Cancel</button>
+      <button class="btn gold" onclick="saveProject()">Save project</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ STORAGE HELPERS ============ */
+// Standalone build: uses the browser's localStorage so this works once deployed
+// on its own (e.g. Vercel), outside the Claude artifact environment.
+// Note: data lives only in the browser it was entered in — it is NOT shared
+// across different computers/devices, and clearing browser data will erase it.
+const STORAGE_PREFIX = 'jbs_system_';
+async function load(key, fallback){
+  try{
+    const raw = localStorage.getItem(STORAGE_PREFIX + key);
+    return raw ? JSON.parse(raw) : fallback;
+  }catch(e){ return fallback; }
+}
+async function save(key, value){
+  try{ localStorage.setItem(STORAGE_PREFIX + key, JSON.stringify(value)); }
+  catch(e){ console.error('storage save failed', e); showToast('Could not save — your browser storage may be full or disabled'); }
+}
+function uid(prefix){ return prefix + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function fmt(n){ return 'KSh ' + (Number(n)||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function showToast(msg){
+  const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._toastT); window._toastT = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ============ STATE ============ */
+let DATA = { clients:[], quotations:[], projects:[], materials:[], transactions:[], features:[], suggestions:[] };
+
+const DEFAULT_FEATURES = [
+  {id:'quotations', name:'Quotation Module', desc:'Client quotations with history lookup', on:true, core:true},
+  {id:'materials', name:'Project Materials', desc:'Material purchase & usage tracking', on:true, core:true},
+  {id:'financials', name:'Financial Management', desc:'Income, expenses, balances, profit', on:true, core:true},
+  {id:'projects', name:'Project Management', desc:'Status & progress tracking', on:true, core:true},
+  {id:'reports', name:'Reports Dashboard', desc:'Cross-module summaries', on:true, core:true},
+  {id:'invoicing', name:'Invoicing (planned)', desc:'Convert accepted quotations into formal invoices', on:false, core:false},
+  {id:'suppliers', name:'Supplier Database (planned)', desc:'Track suppliers, price history & contacts', on:false, core:false},
+  {id:'payroll', name:'Staff & Payroll (planned)', desc:'Labour costs and staff assignments per project', on:false, core:false},
+  {id:'docs', name:'Document Storage (planned)', desc:'Attach drawings, contracts, and photos to a project', on:false, core:false},
+];
+
+async function loadAll(){
+  DATA.clients = await load('jbs:clients', []);
+  DATA.quotations = await load('jbs:quotations', []);
+  DATA.projects = await load('jbs:projects', []);
+  DATA.materials = await load('jbs:materials', []);
+  DATA.transactions = await load('jbs:transactions', []);
+  DATA.features = await load('jbs:features', DEFAULT_FEATURES);
+  DATA.suggestions = await load('jbs:suggestions', []);
+}
+
+/* ============ NAV ============ */
+const NAV_ITEMS = [
+  {id:'dashboard', label:'Dashboard', icon:'M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-16v5h6V4h-6z'},
+  {id:'quotations', label:'Quotations', icon:'M6 2h9l5 5v15a1 1 0 01-1 1H6a1 1 0 01-1-1V3a1 1 0 011-1zm8 1.5V8h4.5L14 3.5zM8 12h8v1.5H8V12zm0 4h8v1.5H8V16zm0-8h4v1.5H8V8z'},
+  {id:'materials', label:'Materials', icon:'M3 7l9-4 9 4-9 4-9-4zm0 4l9 4 9-4M3 15l9 4 9-4'},
+  {id:'financials', label:'Financials', icon:'M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6'},
+  {id:'projects', label:'Projects', icon:'M4 4h16v3H4V4zm0 5h16v11H4V9zm3 3h4v2H7v-2z'},
+  {id:'reports', label:'Reports', icon:'M4 20V10M10 20V4M16 20v-7M20 20H2'},
+  {id:'settings', label:'Features', icon:'M12 15a3 3 0 100-6 3 3 0 000 6zm8-3a7.9 7.9 0 00-.15-1.5l2-1.6-2-3.4-2.4 1a8 8 0 00-2.6-1.5L14.5 2h-5l-.35 2.5a8 8 0 00-2.6 1.5l-2.4-1-2 3.4 2 1.6A7.9 7.9 0 004 12c0 .5.05 1 .15 1.5l-2 1.6 2 3.4 2.4-1a8 8 0 002.6 1.5L9.5 22h5l.35-2.5a8 8 0 002.6-1.5l2.4 1 2-3.4-2-1.6c.1-.5.15-1 .15-1.5z'},
+];
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = NAV_ITEMS.map(it => `
+    <button class="nav-item${it.id===currentPage?' active':''}" onclick="goTo('${it.id}')">
+      <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${it.icon}"/></svg>
+      ${it.label}
+    </button>`).join('');
+}
+let currentPage = 'dashboard';
+function goTo(id){
+  currentPage = id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  renderNav();
+  renderAll();
+}
+
+/* ============ DERIVED HELPERS ============ */
+function clientById(id){ return DATA.clients.find(c=>c.id===id); }
+function projectById(id){ return DATA.projects.find(p=>p.id===id); }
+function quoteById(id){ return DATA.quotations.find(q=>q.id===id); }
+
+function projectFinance(projectId){
+  const proj = projectById(projectId);
+  const quote = proj && proj.quotationId ? quoteById(proj.quotationId) : null;
+  const quotedValue = quote ? quote.total : (proj?.budget || 0);
+  const tx = DATA.transactions.filter(t=>t.projectId===projectId);
+  const income = tx.filter(t=>t.type==='Income').reduce((s,t)=>s+Number(t.amount),0);
+  const otherExpense = tx.filter(t=>t.type==='Expense').reduce((s,t)=>s+Number(t.amount),0);
+  const matCost = DATA.materials.filter(m=>m.projectId===projectId).reduce((s,m)=>s+Number(m.totalCost),0);
+  const spent = matCost + otherExpense;
+  const outstanding = Math.max(quotedValue - income, 0);
+  const profit = income - spent;
+  return {quotedValue, income, otherExpense, matCost, spent, outstanding, profit};
+}
+
+/* ============ RENDER: DASHBOARD ============ */
+function renderDashboard(){
+  const totalClients = DATA.clients.length;
+  const activeProjects = DATA.projects.filter(p=>p.status==='In Progress' || p.status==='Planning').length;
+  let totalIncome=0, totalExpense=0, totalOutstanding=0;
+  DATA.projects.forEach(p=>{ const f = projectFinance(p.id); totalIncome+=f.income; totalExpense+=f.spent; totalOutstanding+=f.outstanding; });
+  const netProfit = totalIncome - totalExpense;
+
+  const stats = [
+    {label:'Total clients', value: totalClients, sub:`${DATA.quotations.length} quotations issued`},
+    {label:'Active projects', value: activeProjects, sub:`${DATA.projects.length} total projects`},
+    {label:'Income received', value: fmt(totalIncome), sub:`Outstanding: ${fmt(totalOutstanding)}`},
+    {label:'Net profit', value: fmt(netProfit), sub:`Expenses: ${fmt(totalExpense)}`, neg: netProfit<0},
+  ];
+  document.getElementById('dash-stats').innerHTML = stats.map(s=>`
+    <div class="card stat-card"><div class="ring"></div>
+      <div class="label">${s.label}</div>
+      <div class="value">${s.value}</div>
+      <div class="delta${s.neg?' neg':''}">${s.sub}</div>
+    </div>`).join('');
+
+  const projs = DATA.projects.slice().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0)).slice(0,3);
+  document.getElementById('dash-projects').innerHTML = projs.length ? projs.map(p=>projectCard(p)).join('') :
+    `<div class="card muted center" style="grid-column:1/-1;">No projects yet — create your first one in Project Management.</div>`;
+
+  const recentQuotes = DATA.quotations.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('dash-quotes').innerHTML = recentQuotes.length ? recentQuotes.map(q=>`
+    <tr><td>${clientById(q.clientId)?.name||'—'}</td><td>${q.quoteNumber}</td><td>${fmt(q.total)}</td><td>${statusBadge(q.status)}</td></tr>
+  `).join('') : `<tr class="empty-row"><td colspan="4">No quotations yet</td></tr>`;
+
+  const recentTx = DATA.transactions.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('dash-tx').innerHTML = recentTx.length ? recentTx.map(t=>`
+    <tr><td>${t.projectId ? (projectById(t.projectId)?.name||'—') : 'General'}</td><td>${badgeType(t.type)}</td><td>${fmt(t.amount)}</td><td>${t.date}</td></tr>
+  `).join('') : `<tr class="empty-row"><td colspan="4">No transactions yet</td></tr>`;
+}
+function statusBadge(status){
+  const map = {Draft:'grey', Sent:'gold', Accepted:'sage', Rejected:'rust', Planning:'grey', 'In Progress':'gold', 'On Hold':'rust', Completed:'sage'};
+  return `<span class="badge ${map[status]||'grey'}">${status}</span>`;
+}
+function badgeType(type){ return `<span class="badge ${type==='Income'?'sage':'rust'}">${type}</span>`; }
+
+function projectCard(p){
+  const f = projectFinance(p.id);
+  const client = clientById(p.clientId);
+  return `<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div><div style="font-weight:700;font-size:15px;">${p.name}</div><div class="muted" style="font-size:12px;">${client?client.name:'No client linked'}</div></div>
+      ${statusBadge(p.status)}
+    </div>
+    <div style="margin:14px 0 6px;"><div class="progress-track"><div class="progress-fill" style="width:${p.progress||0}%"></div></div></div>
+    <div class="muted" style="font-size:11.5px;margin-bottom:10px;">${p.progress||0}% complete</div>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;">
+      <span>Received <b>${fmt(f.income)}</b></span><span>Profit <b style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}">${fmt(f.profit)}</b></span>
+    </div>
+  </div>`;
+}
+
+/* ============ QUOTATIONS ============ */
+let qItems = [];
+function openQuoteModal(prefillClientId){
+  qItems = [{desc:'',qty:1,price:0}];
+  document.getElementById('q-client-name').value='';
+  document.getElementById('q-client-phone').value='';
+  document.getElementById('q-client-email').value='';
+  document.getElementById('q-client-address').value='';
+  document.getElementById('q-date').value = todayISO();
+  document.getElementById('q-status').value='Draft';
+  document.getElementById('q-notes').value='';
+  document.getElementById('q-client-history').innerHTML='';
+  selectedClientId = null;
+  if(prefillClientId){
+    const c = clientById(prefillClientId);
+    if(c){ selectedClientId = c.id; document.getElementById('q-client-name').value=c.name; document.getElementById('q-client-phone').value=c.phone||''; document.getElementById('q-client-email').value=c.email||''; document.getElementById('q-client-address').value=c.address||''; showClientHistory(c.id); }
+  }
+  renderQuoteItems();
+  openModal('modal-quote');
+}
+let selectedClientId = null;
+function clientAutocomplete(){
+  const q = document.getElementById('q-client-name').value.trim().toLowerCase();
+  const list = document.getElementById('q-client-list');
+  selectedClientId = null;
+  document.getElementById('q-client-history').innerHTML='';
+  if(!q){ list.classList.remove('active'); return; }
+  const matches = DATA.clients.filter(c=>c.name.toLowerCase().includes(q));
+  if(!matches.length){ list.classList.remove('active'); return; }
+  list.innerHTML = matches.map(c=>`<div onclick="selectClient('${c.id}')">${c.name}<small>${c.phone||''} ${c.email?(' · '+c.email):''}</small></div>`).join('');
+  list.classList.add('active');
+}
+function selectClient(id){
+  const c = clientById(id); if(!c) return;
+  selectedClientId = id;
+  document.getElementById('q-client-name').value = c.name;
+  document.getElementById('q-client-phone').value = c.phone||'';
+  document.getElementById('q-client-email').value = c.email||'';
+  document.getElementById('q-client-address').value = c.address||'';
+  document.getElementById('q-client-list').classList.remove('active');
+  showClientHistory(id);
+}
+function showClientHistory(id){
+  const past = DATA.quotations.filter(q=>q.clientId===id);
+  const projs = DATA.projects.filter(p=>p.clientId===id);
+  const box = document.getElementById('q-client-history');
+  if(!past.length && !projs.length){ box.innerHTML=''; return; }
+  box.innerHTML = `<div class="client-history">Returning client — ${past.length} previous quotation(s), ${projs.length} project(s) on file. Prior details have been filled in automatically.</div>`;
+}
+function addQuoteItemRow(){ qItems.push({desc:'',qty:1,price:0}); renderQuoteItems(); }
+function renderQuoteItems(){
+  const body = document.getElementById('q-items-body');
+  body.innerHTML = qItems.map((it,i)=>`
+    <tr>
+      <td><input type="text" value="${it.desc}" placeholder="Item description" oninput="qItems[${i}].desc=this.value"></td>
+      <td><input type="number" value="${it.qty}" min="0" step="any" oninput="qItems[${i}].qty=+this.value;updateQTotal()"></td>
+      <td><input type="number" value="${it.price}" min="0" step="any" oninput="qItems[${i}].price=+this.value;updateQTotal()"></td>
+      <td>${fmt(it.qty*it.price)}</td>
+      <td><button class="li-remove" onclick="removeQItem(${i})">×</button></td>
+    </tr>`).join('');
+  updateQTotal();
+}
+function removeQItem(i){ qItems.splice(i,1); if(!qItems.length) qItems.push({desc:'',qty:1,price:0}); renderQuoteItems(); }
+function updateQTotal(){
+  const total = qItems.reduce((s,it)=>s+(it.qty*it.price),0);
+  document.getElementById('q-grand-total').textContent = fmt(total);
+  // re-render totals column without losing focus on inputs is skipped for simplicity — recompute per-row on render only
+}
+async function saveQuotation(){
+  const name = document.getElementById('q-client-name').value.trim();
+  if(!name){ showToast('Client name is required'); return; }
+  let clientId = selectedClientId;
+  const phone = document.getElementById('q-client-phone').value.trim();
+  const email = document.getElementById('q-client-email').value.trim();
+  const address = document.getElementById('q-client-address').value.trim();
+  if(clientId){
+    const c = clientById(clientId);
+    c.phone = phone||c.phone; c.email = email||c.email; c.address = address||c.address;
+  } else {
+    // check if a client with same name already exists (avoid dupes)
+    const existing = DATA.clients.find(c=>c.name.toLowerCase()===name.toLowerCase());
+    if(existing){ clientId = existing.id; existing.phone = phone||existing.phone; existing.email=email||existing.email; existing.address=address||existing.address; }
+    else {
+      clientId = uid('cl');
+      DATA.clients.push({id:clientId, name, phone, email, address, createdAt: Date.now()});
+    }
+  }
+  const total = qItems.reduce((s,it)=>s+(it.qty*it.price),0);
+  const quoteNumber = 'Q-' + (1000 + DATA.quotations.length + 1);
+  DATA.quotations.push({
+    id: uid('qt'), quoteNumber, clientId,
+    date: document.getElementById('q-date').value || todayISO(),
+    status: document.getElementById('q-status').value,
+    items: JSON.parse(JSON.stringify(qItems)),
+    total, notes: document.getElementById('q-notes').value.trim()
+  });
+  await save('jbs:clients', DATA.clients);
+  await save('jbs:quotations', DATA.quotations);
+  closeModal('modal-quote');
+  showToast('Quotation saved');
+  renderAll();
+}
+function renderQuotations(){
+  const search = (document.getElementById('quote-search')?.value||'').toLowerCase();
+  const filter = document.getElementById('quote-filter')?.value||'';
+  let rows = DATA.quotations.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(search) rows = rows.filter(q=> q.quoteNumber.toLowerCase().includes(search) || (clientById(q.clientId)?.name||'').toLowerCase().includes(search));
+  if(filter) rows = rows.filter(q=>q.status===filter);
+  document.getElementById('quotations-body').innerHTML = rows.length ? rows.map(q=>`
+    <tr>
+      <td><b>${q.quoteNumber}</b></td>
+      <td>${clientById(q.clientId)?.name||'—'}</td>
+      <td>${q.date}</td>
+      <td>${fmt(q.total)}</td>
+      <td>${statusBadge(q.status)}</td>
+      <td>
+        <select class="icon-btn" style="border:1px solid var(--line);border-radius:6px;" onchange="setQuoteStatus('${q.id}', this.value)">
+          ${['Draft','Sent','Accepted','Rejected'].map(s=>`<option ${s===q.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="icon-btn" title="New quotation for this client" onclick="openQuoteModal('${q.clientId}')">↻</button>
+      </td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">No quotations match — try New quotation above.</td></tr>`;
+
+  document.getElementById('clients-body').innerHTML = DATA.clients.length ? DATA.clients.map(c=>{
+    const qc = DATA.quotations.filter(q=>q.clientId===c.id).length;
+    const pc = DATA.projects.filter(p=>p.clientId===c.id).length;
+    return `<tr>
+      <td><b>${c.name}</b></td><td>${c.phone||'—'}</td><td>${c.email||'—'}</td><td>${qc}</td><td>${pc}</td>
+      <td><button class="link-btn" onclick="openQuoteModal('${c.id}')">New quote for client</button></td>
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="6">No clients yet</td></tr>`;
+}
+async function setQuoteStatus(id, status){
+  const q = quoteById(id); if(!q) return; q.status = status;
+  await save('jbs:quotations', DATA.quotations);
+  renderAll();
+}
+
+/* ============ MATERIALS ============ */
+function openMaterialModal(){
+  document.getElementById('m-date').value = todayISO();
+  document.getElementById('m-name').value=''; document.getElementById('m-qty').value=1;
+  document.getElementById('m-unit').value=''; document.getElementById('m-cost').value=0;
+  document.getElementById('m-supplier').value=''; document.getElementById('m-notes').value='';
+  fillProjectSelect('m-project');
+  openModal('modal-material');
+}
+async function saveMaterial(){
+  const projectId = document.getElementById('m-project').value;
+  const name = document.getElementById('m-name').value.trim();
+  if(!projectId){ showToast('Choose a project'); return; }
+  if(!name){ showToast('Material name is required'); return; }
+  const qty = +document.getElementById('m-qty').value || 0;
+  const unitCost = +document.getElementById('m-cost').value || 0;
+  DATA.materials.push({
+    id: uid('mt'), projectId, name, qty, unit: document.getElementById('m-unit').value.trim(),
+    unitCost, totalCost: qty*unitCost, date: document.getElementById('m-date').value||todayISO(),
+    supplier: document.getElementById('m-supplier').value.trim(), notes: document.getElementById('m-notes').value.trim()
+  });
+  await save('jbs:materials', DATA.materials);
+  closeModal('modal-material');
+  showToast('Material logged');
+  renderAll();
+}
+function renderMaterials(){
+  const sel = document.getElementById('mat-project-filter');
+  fillProjectSelect('mat-project-filter', true);
+  const filterProj = sel.value;
+  const search = (document.getElementById('mat-search').value||'').toLowerCase();
+  let rows = DATA.materials.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(filterProj) rows = rows.filter(m=>m.projectId===filterProj);
+  if(search) rows = rows.filter(m=>m.name.toLowerCase().includes(search));
+  const total = rows.reduce((s,m)=>s+Number(m.totalCost),0);
+  document.getElementById('mat-total-badge').textContent = 'Total: ' + fmt(total);
+  document.getElementById('materials-body').innerHTML = rows.length ? rows.map(m=>`
+    <tr>
+      <td>${m.date}</td><td>${projectById(m.projectId)?.name||'—'}</td><td>${m.name}</td>
+      <td>${m.qty} ${m.unit||''}</td><td>${fmt(m.unitCost)}</td><td><b>${fmt(m.totalCost)}</b></td><td>${m.supplier||'—'}</td>
+      <td><button class="icon-btn" onclick="deleteMaterial('${m.id}')">🗑</button></td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="8">No materials logged yet</td></tr>`;
+}
+async function deleteMaterial(id){
+  DATA.materials = DATA.materials.filter(m=>m.id!==id);
+  await save('jbs:materials', DATA.materials);
+  renderAll();
+}
+
+/* ============ FINANCIALS ============ */
+function openTxModal(){
+  document.getElementById('t-date').value = todayISO();
+  document.getElementById('t-amount').value = 0;
+  document.getElementById('t-category').value=''; document.getElementById('t-desc').value='';
+  fillProjectSelect('t-project', true, 'General / overhead');
+  openModal('modal-tx');
+}
+async function saveTransaction(){
+  const amount = +document.getElementById('t-amount').value || 0;
+  if(amount<=0){ showToast('Enter an amount'); return; }
+  DATA.transactions.push({
+    id: uid('tx'), type: document.getElementById('t-type').value,
+    projectId: document.getElementById('t-project').value || null,
+    amount, date: document.getElementById('t-date').value||todayISO(),
+    category: document.getElementById('t-category').value.trim(),
+    description: document.getElementById('t-desc').value.trim()
+  });
+  await save('jbs:transactions', DATA.transactions);
+  closeModal('modal-tx');
+  showToast('Transaction recorded');
+  renderAll();
+}
+function renderFinancials(){
+  let totalIncome=0,totalExpense=0,totalOutstanding=0,totalProfit=0;
+  DATA.projects.forEach(p=>{ const f=projectFinance(p.id); totalIncome+=f.income; totalExpense+=f.spent; totalOutstanding+=f.outstanding; totalProfit+=f.profit; });
+  const stats=[
+    {label:'Income received', value: fmt(totalIncome)},
+    {label:'Total expenses', value: fmt(totalExpense)},
+    {label:'Outstanding balances', value: fmt(totalOutstanding)},
+    {label:'Net profit', value: fmt(totalProfit), neg: totalProfit<0},
+  ];
+  document.getElementById('fin-stats').innerHTML = stats.map(s=>`
+    <div class="card stat-card"><div class="ring"></div><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`).join('');
+
+  document.getElementById('fin-balances-body').innerHTML = DATA.projects.length ? DATA.projects.map(p=>{
+    const f = projectFinance(p.id);
+    return `<tr><td><b>${p.name}</b></td><td>${fmt(f.quotedValue)}</td><td>${fmt(f.income)}</td><td>${fmt(f.spent)}</td>
+      <td style="color:${f.outstanding>0?'var(--rust)':'var(--sage)'}">${fmt(f.outstanding)}</td>
+      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${fmt(f.profit)}</b></td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="6">No projects yet</td></tr>`;
+
+  fillProjectSelect('tx-project-filter', true);
+  const projFilter = document.getElementById('tx-project-filter').value;
+  const typeFilter = document.getElementById('tx-type-filter').value;
+  let rows = DATA.transactions.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(projFilter) rows = rows.filter(t=>t.projectId===projFilter);
+  if(typeFilter) rows = rows.filter(t=>t.type===typeFilter);
+  document.getElementById('tx-body').innerHTML = rows.length ? rows.map(t=>`
+    <tr><td>${t.date}</td><td>${t.projectId?(projectById(t.projectId)?.name||'—'):'General'}</td><td>${badgeType(t.type)}</td>
+      <td>${t.category||'—'}</td><td>${t.description||'—'}</td><td>${fmt(t.amount)}</td>
+      <td><button class="icon-btn" onclick="deleteTx('${t.id}')">🗑</button></td></tr>`).join('') :
+    `<tr class="empty-row"><td colspan="7">No transactions yet</td></tr>`;
+}
+async function deleteTx(id){
+  DATA.transactions = DATA.transactions.filter(t=>t.id!==id);
+  await save('jbs:transactions', DATA.transactions);
+  renderAll();
+}
+
+/* ============ PROJECTS ============ */
+let projectStatusFilter = '';
+function openProjectModal(){
+  document.getElementById('p-name').value=''; document.getElementById('p-start').value=todayISO();
+  document.getElementById('p-budget').value=0; document.getElementById('p-status').value='Planning';
+  document.getElementById('p-progress').value=0;
+  const clientSel = document.getElementById('p-client');
+  clientSel.innerHTML = '<option value="">Select client...</option>' + DATA.clients.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const quoteSel = document.getElementById('p-quote');
+  quoteSel.innerHTML = '<option value="">None</option>' + DATA.quotations.filter(q=>q.status==='Accepted').map(q=>`<option value="${q.id}">${q.quoteNumber} — ${clientById(q.clientId)?.name} (${fmt(q.total)})</option>`).join('');
+  openModal('modal-project');
+}
+document.addEventListener('change', (e)=>{
+  if(e.target && e.target.id==='p-quote'){
+    const q = quoteById(e.target.value);
+    if(q){ document.getElementById('p-client').value = q.clientId; document.getElementById('p-budget').value = q.total; }
+  }
+});
+async function saveProject(){
+  const name = document.getElementById('p-name').value.trim();
+  if(!name){ showToast('Project name is required'); return; }
+  const clientId = document.getElementById('p-client').value || null;
+  DATA.projects.push({
+    id: uid('pr'), name, clientId, quotationId: document.getElementById('p-quote').value || null,
+    startDate: document.getElementById('p-start').value||todayISO(),
+    budget: +document.getElementById('p-budget').value||0,
+    status: document.getElementById('p-status').value,
+    progress: +document.getElementById('p-progress').value||0,
+    updatedAt: Date.now()
+  });
+  await save('jbs:projects', DATA.projects);
+  closeModal('modal-project');
+  showToast('Project created');
+  renderAll();
+}
+async function updateProjectField(id, field, value){
+  const p = projectById(id); if(!p) return;
+  p[field] = (field==='progress') ? Math.max(0,Math.min(100,+value||0)) : value;
+  p.updatedAt = Date.now();
+  await save('jbs:projects', DATA.projects);
+  renderAll();
+}
+function renderProjects(){
+  const statuses = ['All','Planning','In Progress','On Hold','Completed'];
+  document.getElementById('project-status-tabs').innerHTML = statuses.map(s=>`
+    <button class="${((s==='All'&&!projectStatusFilter)||s===projectStatusFilter)?'active':''}" onclick="setProjectFilter('${s==='All'?'':s}')">${s}</button>`).join('');
+  let rows = DATA.projects.slice().sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+  if(projectStatusFilter) rows = rows.filter(p=>p.status===projectStatusFilter);
+  document.getElementById('projects-grid').innerHTML = rows.length ? rows.map(p=>{
+    const f = projectFinance(p.id);
+    const client = clientById(p.clientId);
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+        <div><div style="font-weight:700;font-size:15.5px;">${p.name}</div><div class="muted" style="font-size:12px;">${client?client.name:'No client linked'} · started ${p.startDate}</div></div>
+        <button class="icon-btn" title="Delete project" onclick="deleteProject('${p.id}')">🗑</button>
+      </div>
+      <div class="field" style="margin-top:12px;"><label>Status</label>
+        <select onchange="updateProjectField('${p.id}','status',this.value)">
+          ${['Planning','In Progress','On Hold','Completed'].map(s=>`<option ${s===p.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Progress: ${p.progress||0}%</label><input type="range" min="0" max="100" value="${p.progress||0}" oninput="this.previousElementSibling.textContent='Progress: '+this.value+'%'" onchange="updateProjectField('${p.id}','progress',this.value)"></div>
+      <div class="divider"></div>
+      <div style="font-size:12.5px;display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;justify-content:space-between;"><span class="muted">Budget / Quoted</span><b>${fmt(f.quotedValue||p.budget)}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span class="muted">Received</span><b>${fmt(f.income)}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span class="muted">Spent</span><b>${fmt(f.spent)}</b></div>
+        <div style="display:flex;justify-content:space-between;"><span class="muted">Outstanding</span><b style="color:${f.outstanding>0?'var(--rust)':'var(--sage)'}">${fmt(f.outstanding)}</b></div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="card muted center" style="grid-column:1/-1;">No projects match this filter.</div>`;
+}
+function setProjectFilter(s){ projectStatusFilter = s; renderProjects(); }
+async function deleteProject(id){
+  if(!confirm('Delete this project? Linked materials and transactions will stay but become unlinked.')) return;
+  DATA.projects = DATA.projects.filter(p=>p.id!==id);
+  await save('jbs:projects', DATA.projects);
+  renderAll();
+}
+
+/* ============ REPORTS ============ */
+function renderReports(){
+  let quoted=0, matCost=0, otherExp=0, income=0, profit=0;
+  DATA.projects.forEach(p=>{ const f=projectFinance(p.id); quoted+=f.quotedValue; matCost+=f.matCost; otherExp+=f.otherExpense; income+=f.income; profit+=f.profit; });
+  const stats=[
+    {label:'Total quoted value', value: fmt(quoted)},
+    {label:'Total material cost', value: fmt(matCost)},
+    {label:'Total income', value: fmt(income)},
+    {label:'Total net profit', value: fmt(profit), neg: profit<0},
+  ];
+  document.getElementById('report-stats').innerHTML = stats.map(s=>`
+    <div class="card stat-card"><div class="ring"></div><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`).join('');
+
+  document.getElementById('report-profit-body').innerHTML = DATA.projects.length ? DATA.projects.map(p=>{
+    const f = projectFinance(p.id);
+    const margin = f.income>0 ? ((f.profit/f.income)*100).toFixed(1)+'%' : '—';
+    return `<tr><td><b>${p.name}</b></td><td>${fmt(f.quotedValue)}</td><td>${fmt(f.matCost)}</td><td>${fmt(f.otherExpense)}</td><td>${fmt(f.income)}</td>
+      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${fmt(f.profit)}</b></td><td>${margin}</td></tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="7">No project data yet</td></tr>`;
+
+  const total = DATA.quotations.length;
+  const accepted = DATA.quotations.filter(q=>q.status==='Accepted').length;
+  const rejected = DATA.quotations.filter(q=>q.status==='Rejected').length;
+  const pending = DATA.quotations.filter(q=>q.status==='Draft'||q.status==='Sent').length;
+  const rate = total ? ((accepted/total)*100).toFixed(0)+'%' : '—';
+  const qstats = [
+    {label:'Quotations issued', value: total},
+    {label:'Accepted', value: accepted},
+    {label:'Pending / sent', value: pending},
+    {label:'Conversion rate', value: rate},
+  ];
+  document.getElementById('report-quote-stats').innerHTML = qstats.map(s=>`
+    <div class="card stat-card"><div class="label">${s.label}</div><div class="value" style="font-size:24px;">${s.value}</div></div>`).join('');
+
+  const byMat = {};
+  DATA.materials.forEach(m=>{
+    if(!byMat[m.name]) byMat[m.name] = {qty:0,unit:m.unit,spend:0};
+    byMat[m.name].qty += Number(m.qty); byMat[m.name].spend += Number(m.totalCost);
+  });
+  const rowsMat = Object.entries(byMat).sort((a,b)=>b[1].spend-a[1].spend).slice(0,10);
+  document.getElementById('report-materials-body').innerHTML = rowsMat.length ? rowsMat.map(([name,d])=>`
+    <tr><td>${name}</td><td>${d.qty} ${d.unit||''}</td><td>${fmt(d.spend)}</td></tr>`).join('') :
+    `<tr class="empty-row"><td colspan="3">No materials logged yet</td></tr>`;
+}
+
+/* ============ SETTINGS / FEATURES ============ */
+function renderSettings(){
+  document.getElementById('features-list').innerHTML = DATA.features.map((f,i)=>`
+    <div class="feature-item">
+      <div class="fi-left"><div class="fi-icon">${f.name.charAt(0)}</div>
+        <div><div style="font-weight:700;font-size:14px;">${f.name}</div><div class="muted" style="font-size:12px;">${f.desc}</div></div>
+      </div>
+      ${f.core ? `<span class="badge gold">Core</span>` : `<div class="switch${f.on?' on':''}" onclick="toggleFeature(${i})"></div>`}
+    </div>`).join('');
+  document.getElementById('suggestions-list').innerHTML = DATA.suggestions.length ? `
+    <div class="muted" style="font-size:12px;margin-bottom:6px;">Saved notes:</div>` +
+    DATA.suggestions.slice().reverse().map(s=>`<div class="client-history" style="margin-bottom:8px;">${s.text}<br><small class="muted">${new Date(s.date).toLocaleDateString()}</small></div>`).join('') : '';
+}
+async function toggleFeature(i){
+  DATA.features[i].on = !DATA.features[i].on;
+  await save('jbs:features', DATA.features);
+  renderSettings();
+}
+async function saveSuggestion(){
+  const el = document.getElementById('feature-suggestion');
+  const text = el.value.trim(); if(!text) return;
+  DATA.suggestions.push({text, date: Date.now()});
+  await save('jbs:suggestions', DATA.suggestions);
+  el.value='';
+  renderSettings();
+  showToast('Note saved');
+}
+
+/* ============ SHARED SELECT FILLERS ============ */
+function fillProjectSelect(id, withAllOption, allLabel){
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  sel.innerHTML = (withAllOption ? `<option value="">${allLabel||'All projects'}</option>` : '<option value="">Select project...</option>') +
+    DATA.projects.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  if(current) sel.value = current;
+}
+
+/* ============ MODAL HELPERS ============ */
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(ov=>{
+  ov.addEventListener('click', (e)=>{ if(e.target===ov) ov.classList.remove('active'); });
+});
+
+/* ============ MASTER RENDER ============ */
+function renderAll(){
+  renderDashboard();
+  renderQuotations();
+  renderMaterials();
+  renderFinancials();
+  renderProjects();
+  renderReports();
+  renderSettings();
+}
+
+/* ============ AUTH (demo only) ============ */
+// NOTE: this is a client-side demo gate to preview the login experience.
+// It is not real security — credentials are visible in the page source and
+// there is no server-side check. Do not rely on this to protect real data.
+const DEMO_ACCOUNT = { email: 'emma@gmail.com', password: '1234', displayName: 'Emma' };
+let appInitialized = false;
+
+function handleLogin(e){
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  if(email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password){
+    errEl.textContent = '';
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('unlocked');
+    document.getElementById('current-user').textContent = DEMO_ACCOUNT.displayName;
+    if(!appInitialized){ appInitialized = true; initApp(); }
+  } else {
+    errEl.textContent = 'Incorrect email or password.';
+  }
+  return false;
+}
+function handleLogout(){
+  document.getElementById('app').classList.remove('unlocked');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-form').reset();
+  document.getElementById('login-error').textContent = '';
+}
+
+/* ============ INIT ============ */
+async function initApp(){
+  renderNav();
+  await loadAll();
+  renderAll();
+}
+
+</script>
+</body>
+</html>
