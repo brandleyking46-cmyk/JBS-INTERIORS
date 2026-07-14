@@ -212,7 +212,7 @@
       <div class="login-error" id="login-error"></div>
       <button type="submit" class="btn gold">Sign in</button>
     </form>
-    <div class="login-demo-note">Demo access — email <b>emma@gmail.com</b>, password <b>1234</b></div>
+    <div class="login-demo-note">Demo manager access — email <b>emma@gmail.com</b>, password <b>1234</b>. Once signed in as manager, add staff accounts under Users & Staff.</div>
   </div>
 </div>
 
@@ -369,6 +369,21 @@
       </div>
     </section>
 
+    <!-- USERS & STAFF (manager only) -->
+    <section class="page" id="page-users">
+      <div class="page-head">
+        <div><div class="eyebrow">Manager only</div><h1>Users & Staff</h1><p>Add team members and set what they're responsible for.</p></div>
+        <button class="btn gold" onclick="openUserModal()">+ Add user</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Job title</th><th>Added</th><th></th></tr></thead>
+          <tbody id="users-body"></tbody>
+        </table>
+      </div>
+      <div class="mini-note" style="margin-top:12px;">Staff accounts can use Quotations, Materials, Projects and the transaction ledger, but net profit figures and this Users & Staff page stay manager-only.</div>
+    </section>
+
     <!-- SETTINGS / FEATURES -->
     <section class="page" id="page-settings">
       <div class="page-head">
@@ -495,6 +510,30 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-user')">×</button>
+    <h2>Add User</h2>
+    <div class="modal-sub">Set their login and what they're responsible for in the system.</div>
+    <div class="field"><label>Full name</label><input type="text" id="u-name" placeholder="e.g. James Otieno"></div>
+    <div class="field"><label>Email (used to log in)</label><input type="email" id="u-email" placeholder="name@email.com"></div>
+    <div class="field"><label>Password</label><input type="text" id="u-password" placeholder="Set a temporary password"></div>
+    <div class="field-row">
+      <div class="field"><label>Access level</label><select id="u-role"><option value="staff">Staff</option><option value="manager">Manager</option></select></div>
+      <div class="field"><label>Job title</label><input type="text" id="u-title" placeholder="e.g. Project Coordinator" list="job-title-suggestions"></div>
+    </div>
+    <datalist id="job-title-suggestions">
+      <option value="Project Coordinator"><option value="Site Supervisor"><option value="Accountant">
+      <option value="Procurement Officer"><option value="Interior Designer"><option value="Site Foreman">
+    </datalist>
+    <div class="mini-note">Manager access sees net profit figures and can add or remove users. Staff access covers quotations, materials, projects and the transaction ledger.</div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal('modal-user')">Cancel</button>
+      <button class="btn gold" onclick="saveUser()">Save user</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -523,7 +562,11 @@ function showToast(msg){
 }
 
 /* ============ STATE ============ */
-let DATA = { clients:[], quotations:[], projects:[], materials:[], transactions:[], features:[], suggestions:[] };
+let DATA = { clients:[], quotations:[], projects:[], materials:[], transactions:[], features:[], suggestions:[], users:[] };
+
+const DEFAULT_USERS = [
+  {id:'u_manager1', name:'Emma', email:'emma@gmail.com', password:'1234', role:'manager', jobTitle:'Owner / Manager', createdAt: Date.now()},
+];
 
 const DEFAULT_FEATURES = [
   {id:'quotations', name:'Quotation Module', desc:'Client quotations with history lookup', on:true, core:true},
@@ -545,7 +588,14 @@ async function loadAll(){
   DATA.transactions = await load('jbs:transactions', []);
   DATA.features = await load('jbs:features', DEFAULT_FEATURES);
   DATA.suggestions = await load('jbs:suggestions', []);
+  DATA.users = await load('jbs:users', null);
+  if(!DATA.users || !DATA.users.length){ DATA.users = JSON.parse(JSON.stringify(DEFAULT_USERS)); await save('jbs:users', DATA.users); }
 }
+
+/* ============ PERMISSIONS ============ */
+let currentUser = null;
+function isManager(){ return !!(currentUser && currentUser.role === 'manager'); }
+function restrictedText(){ return '<span class="muted" title="Manager access only">Restricted</span>'; }
 
 /* ============ NAV ============ */
 const NAV_ITEMS = [
@@ -555,11 +605,13 @@ const NAV_ITEMS = [
   {id:'financials', label:'Financials', icon:'M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6'},
   {id:'projects', label:'Projects', icon:'M4 4h16v3H4V4zm0 5h16v11H4V9zm3 3h4v2H7v-2z'},
   {id:'reports', label:'Reports', icon:'M4 20V10M10 20V4M16 20v-7M20 20H2'},
+  {id:'users', label:'Users & Staff', icon:'M9 11a4 4 0 100-8 4 4 0 000 8zm-7 9c0-3.3 3.1-6 7-6s7 2.7 7 6M17 11a3 3 0 100-6M23 20c0-2.8-2.4-5.1-5.5-5.8', managerOnly:true},
   {id:'settings', label:'Features', icon:'M12 15a3 3 0 100-6 3 3 0 000 6zm8-3a7.9 7.9 0 00-.15-1.5l2-1.6-2-3.4-2.4 1a8 8 0 00-2.6-1.5L14.5 2h-5l-.35 2.5a8 8 0 00-2.6 1.5l-2.4-1-2 3.4 2 1.6A7.9 7.9 0 004 12c0 .5.05 1 .15 1.5l-2 1.6 2 3.4 2.4-1a8 8 0 002.6 1.5L9.5 22h5l.35-2.5a8 8 0 002.6-1.5l2.4 1 2-3.4-2-1.6c.1-.5.15-1 .15-1.5z'},
 ];
 function renderNav(){
   const nav = document.getElementById('nav');
-  nav.innerHTML = NAV_ITEMS.map(it => `
+  const items = NAV_ITEMS.filter(it => !it.managerOnly || isManager());
+  nav.innerHTML = items.map(it => `
     <button class="nav-item${it.id===currentPage?' active':''}" onclick="goTo('${it.id}')">
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${it.icon}"/></svg>
       ${it.label}
@@ -567,6 +619,8 @@ function renderNav(){
 }
 let currentPage = 'dashboard';
 function goTo(id){
+  const item = NAV_ITEMS.find(it=>it.id===id);
+  if(item && item.managerOnly && !isManager()){ showToast('Manager access only'); return; }
   currentPage = id;
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -605,7 +659,9 @@ function renderDashboard(){
     {label:'Total clients', value: totalClients, sub:`${DATA.quotations.length} quotations issued`},
     {label:'Active projects', value: activeProjects, sub:`${DATA.projects.length} total projects`},
     {label:'Income received', value: fmt(totalIncome), sub:`Outstanding: ${fmt(totalOutstanding)}`},
-    {label:'Net profit', value: fmt(netProfit), sub:`Expenses: ${fmt(totalExpense)}`, neg: netProfit<0},
+    isManager()
+      ? {label:'Net profit', value: fmt(netProfit), sub:`Expenses: ${fmt(totalExpense)}`, neg: netProfit<0}
+      : {label:'Net profit', value: restrictedText(), sub:'Manager access only'},
   ];
   document.getElementById('dash-stats').innerHTML = stats.map(s=>`
     <div class="card stat-card"><div class="ring"></div>
@@ -645,7 +701,7 @@ function projectCard(p){
     <div style="margin:14px 0 6px;"><div class="progress-track"><div class="progress-fill" style="width:${p.progress||0}%"></div></div></div>
     <div class="muted" style="font-size:11.5px;margin-bottom:10px;">${p.progress||0}% complete</div>
     <div style="display:flex;justify-content:space-between;font-size:12.5px;">
-      <span>Received <b>${fmt(f.income)}</b></span><span>Profit <b style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}">${fmt(f.profit)}</b></span>
+      <span>Received <b>${fmt(f.income)}</b></span><span>Profit <b style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}">${isManager()?fmt(f.profit):restrictedText()}</b></span>
     </div>
   </div>`;
 }
@@ -867,7 +923,7 @@ function renderFinancials(){
     {label:'Income received', value: fmt(totalIncome)},
     {label:'Total expenses', value: fmt(totalExpense)},
     {label:'Outstanding balances', value: fmt(totalOutstanding)},
-    {label:'Net profit', value: fmt(totalProfit), neg: totalProfit<0},
+    isManager() ? {label:'Net profit', value: fmt(totalProfit), neg: totalProfit<0} : {label:'Net profit', value: restrictedText()},
   ];
   document.getElementById('fin-stats').innerHTML = stats.map(s=>`
     <div class="card stat-card"><div class="ring"></div><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`).join('');
@@ -876,7 +932,7 @@ function renderFinancials(){
     const f = projectFinance(p.id);
     return `<tr><td><b>${p.name}</b></td><td>${fmt(f.quotedValue)}</td><td>${fmt(f.income)}</td><td>${fmt(f.spent)}</td>
       <td style="color:${f.outstanding>0?'var(--rust)':'var(--sage)'}">${fmt(f.outstanding)}</td>
-      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${fmt(f.profit)}</b></td></tr>`;
+      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${isManager()?fmt(f.profit):restrictedText()}</b></td></tr>`;
   }).join('') : `<tr class="empty-row"><td colspan="6">No projects yet</td></tr>`;
 
   fillProjectSelect('tx-project-filter', true);
@@ -985,7 +1041,7 @@ function renderReports(){
     {label:'Total quoted value', value: fmt(quoted)},
     {label:'Total material cost', value: fmt(matCost)},
     {label:'Total income', value: fmt(income)},
-    {label:'Total net profit', value: fmt(profit), neg: profit<0},
+    isManager() ? {label:'Total net profit', value: fmt(profit), neg: profit<0} : {label:'Total net profit', value: restrictedText()},
   ];
   document.getElementById('report-stats').innerHTML = stats.map(s=>`
     <div class="card stat-card"><div class="ring"></div><div class="label">${s.label}</div><div class="value">${s.value}</div></div>`).join('');
@@ -994,7 +1050,7 @@ function renderReports(){
     const f = projectFinance(p.id);
     const margin = f.income>0 ? ((f.profit/f.income)*100).toFixed(1)+'%' : '—';
     return `<tr><td><b>${p.name}</b></td><td>${fmt(f.quotedValue)}</td><td>${fmt(f.matCost)}</td><td>${fmt(f.otherExpense)}</td><td>${fmt(f.income)}</td>
-      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${fmt(f.profit)}</b></td><td>${margin}</td></tr>`;
+      <td style="color:${f.profit>=0?'var(--sage)':'var(--rust)'}"><b>${isManager()?fmt(f.profit):restrictedText()}</b></td><td>${isManager()?margin:restrictedText()}</td></tr>`;
   }).join('') : `<tr class="empty-row"><td colspan="7">No project data yet</td></tr>`;
 
   const total = DATA.quotations.length;
@@ -1020,6 +1076,54 @@ function renderReports(){
   document.getElementById('report-materials-body').innerHTML = rowsMat.length ? rowsMat.map(([name,d])=>`
     <tr><td>${name}</td><td>${d.qty} ${d.unit||''}</td><td>${fmt(d.spend)}</td></tr>`).join('') :
     `<tr class="empty-row"><td colspan="3">No materials logged yet</td></tr>`;
+}
+
+/* ============ USERS & STAFF (manager only) ============ */
+function openUserModal(){
+  if(!isManager()){ showToast('Manager access only'); return; }
+  document.getElementById('u-name').value=''; document.getElementById('u-email').value='';
+  document.getElementById('u-password').value=''; document.getElementById('u-role').value='staff';
+  document.getElementById('u-title').value='';
+  openModal('modal-user');
+}
+async function saveUser(){
+  if(!isManager()){ showToast('Manager access only'); return; }
+  const name = document.getElementById('u-name').value.trim();
+  const email = document.getElementById('u-email').value.trim().toLowerCase();
+  const password = document.getElementById('u-password').value;
+  if(!name || !email || !password){ showToast('Name, email and password are required'); return; }
+  if(DATA.users.some(u=>u.email.toLowerCase()===email)){ showToast('A user with that email already exists'); return; }
+  DATA.users.push({
+    id: uid('us'), name, email, password,
+    role: document.getElementById('u-role').value,
+    jobTitle: document.getElementById('u-title').value.trim(),
+    createdAt: Date.now()
+  });
+  await save('jbs:users', DATA.users);
+  closeModal('modal-user');
+  showToast('User added');
+  renderUsers();
+}
+async function deleteUser(id){
+  const managers = DATA.users.filter(u=>u.role==='manager');
+  const target = DATA.users.find(u=>u.id===id);
+  if(target && target.role==='manager' && managers.length<=1){ showToast("Can't remove the only manager account"); return; }
+  if(currentUser && currentUser.id===id){ showToast("You can't remove the account you're logged in as"); return; }
+  if(!confirm('Remove this user? They will no longer be able to log in.')) return;
+  DATA.users = DATA.users.filter(u=>u.id!==id);
+  await save('jbs:users', DATA.users);
+  renderUsers();
+}
+function renderUsers(){
+  if(!isManager()) return;
+  document.getElementById('users-body').innerHTML = DATA.users.length ? DATA.users.map(u=>`
+    <tr>
+      <td><b>${u.name}</b></td><td>${u.email}</td>
+      <td><span class="badge ${u.role==='manager'?'gold':'grey'}">${u.role==='manager'?'Manager':'Staff'}</span></td>
+      <td>${u.jobTitle||'—'}</td>
+      <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+      <td><button class="icon-btn" onclick="deleteUser('${u.id}')">🗑</button></td>
+    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">No users yet</td></tr>`;
 }
 
 /* ============ SETTINGS / FEATURES ============ */
@@ -1074,33 +1178,45 @@ function renderAll(){
   renderFinancials();
   renderProjects();
   renderReports();
+  if(isManager()) renderUsers();
   renderSettings();
 }
 
-/* ============ AUTH (demo only) ============ */
-// NOTE: this is a client-side demo gate to preview the login experience.
-// It is not real security — credentials are visible in the page source and
-// there is no server-side check. Do not rely on this to protect real data.
-const DEMO_ACCOUNT = { email: 'emma@gmail.com', password: '1234', displayName: 'Emma' };
+/* ============ AUTH ============ */
+// NOTE: this is a client-side login gate to demonstrate the experience.
+// Passwords are stored in plain text in browser storage and are visible in
+// the page source/devtools — this is NOT real security. Fine for a demo,
+// not for protecting real sensitive data without a proper backend.
 let appInitialized = false;
 
-function handleLogin(e){
+async function handleLogin(e){
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
   const errEl = document.getElementById('login-error');
-  if(email === DEMO_ACCOUNT.email && password === DEMO_ACCOUNT.password){
+
+  if(!DATA.users || !DATA.users.length){ DATA.users = await load('jbs:users', null); }
+  if(!DATA.users || !DATA.users.length){
+    DATA.users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+    await save('jbs:users', DATA.users);
+  }
+
+  const match = DATA.users.find(u => u.email.toLowerCase() === email && u.password === password);
+  if(match){
     errEl.textContent = '';
+    currentUser = match;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').classList.add('unlocked');
-    document.getElementById('current-user').textContent = DEMO_ACCOUNT.displayName;
+    document.getElementById('current-user').textContent = `${match.name} · ${match.jobTitle || (match.role==='manager'?'Manager':'Staff')}`;
     if(!appInitialized){ appInitialized = true; initApp(); }
+    else { renderNav(); goTo('dashboard'); }
   } else {
     errEl.textContent = 'Incorrect email or password.';
   }
   return false;
 }
 function handleLogout(){
+  currentUser = null;
   document.getElementById('app').classList.remove('unlocked');
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('login-form').reset();
@@ -1110,8 +1226,9 @@ function handleLogout(){
 /* ============ INIT ============ */
 async function initApp(){
   await loadAll();
-  goTo(currentPage);
+  goTo('dashboard');
 }
+
 
 </script>
 </body>
