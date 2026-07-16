@@ -292,6 +292,45 @@
     .grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:minmax(0,1fr);}
     .login-card{padding:32px 24px 28px;}
   }
+
+  /* ================= PUBLIC CLIENT QUOTE VIEW ================= */
+  #public-quote-view{display:none;min-height:100vh;background:var(--cream-deep);padding:36px 18px;}
+  #public-quote-view.active{display:flex;justify-content:center;}
+  .pq-wrap{width:100%;max-width:680px;}
+  .pq-header{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+  .pq-badge{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold) 60%, var(--gold-dark));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:17px;color:#2a2520;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+  .pq-header .pq-company{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1.1;}
+  .pq-header .pq-sub{font-size:10.5px;letter-spacing:2px;text-transform:uppercase;color:var(--gold-dark);font-weight:600;}
+  .pq-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:30px 28px;box-shadow:var(--shadow-lg);}
+  .pq-meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--line);}
+  .pq-meta div div:first-child{font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);font-weight:700;margin-bottom:3px;}
+  .pq-meta div div:last-child{font-size:15px;font-weight:600;}
+  .pq-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin:0 0 4px;}
+  .pq-status-row{margin-bottom:18px;}
+  .pq-items table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:18px;}
+  .pq-items th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);padding:8px 6px;border-bottom:2px solid var(--ink);}
+  .pq-items td{padding:10px 6px;border-bottom:1px solid var(--cream-deep);}
+  .pq-total-row{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;border-top:2px solid var(--ink);}
+  .pq-total-row .lbl{font-size:13px;color:var(--ink-soft);font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+  .pq-total-row .amt{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;}
+  .pq-notes{margin-top:16px;font-size:12.5px;color:var(--ink-soft);background:var(--cream-deep);border-radius:8px;padding:12px 14px;}
+  .pq-actions{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap;}
+  .pq-actions .btn{flex:1;justify-content:center;min-width:140px;}
+  .btn.approve{background:var(--sage);color:#fff;}
+  .btn.reject{background:var(--rust-bg);color:var(--rust);}
+  .pq-response{text-align:center;padding:20px;border-radius:10px;margin-top:20px;font-weight:600;}
+  .pq-response.approved{background:var(--sage-bg);color:var(--sage);}
+  .pq-response.rejected{background:var(--rust-bg);color:var(--rust);}
+  .pq-footer-note{text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:18px;}
+  .pq-notfound{text-align:center;padding:60px 20px;}
+
+  @media print{
+    body *{visibility:hidden;}
+    #public-quote-view, #public-quote-view *{visibility:visible;}
+    #public-quote-view{position:absolute;top:0;left:0;width:100%;padding:0;background:#fff;display:flex !important;}
+    .no-print{display:none !important;}
+    .pq-card{box-shadow:none;border:none;}
+  }
 </style>
 </head>
 <body>
@@ -309,6 +348,10 @@
     </form>
     <div class="login-demo-note">Demo manager access — email <b>emma@gmail.com</b>, password <b>1234</b>. Once signed in as manager, add staff accounts under Users & Staff.</div>
   </div>
+</div>
+
+<div id="public-quote-view">
+  <div class="pq-wrap" id="pq-content"><!-- filled by JS --></div>
 </div>
 
 <div id="app">
@@ -381,6 +424,7 @@
         </select>
         <div class="spacer"></div>
       </div>
+      <div class="mini-note" style="margin:-6px 0 16px;">📱 sends a WhatsApp message and ✉️ opens an email — both pre-filled with the quotation. When the client replies, update their status yourself using the dropdown (Draft/Sent/Accepted/Rejected).</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Quote No.</th><th>Client</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead>
@@ -501,6 +545,17 @@
       <div class="page-head">
         <div><div class="eyebrow">Grow the system</div><h1>Features & Modules</h1><p>Turn on modules as the business grows. All data stays in one place.</p></div>
       </div>
+
+      <div class="card" style="margin-bottom:24px;">
+        <h3 style="margin-top:0;">Client-facing quotation links</h3>
+        <p class="muted" style="font-size:13px;">Set the WhatsApp number that gets notified when a client approves or rejects a quotation from their link.</p>
+        <div class="field-row">
+          <div class="field"><label>Business WhatsApp number</label><input type="text" id="s-whatsapp" placeholder="+254712345678"></div>
+          <div class="field"><label>Business email (optional)</label><input type="text" id="s-email" placeholder="office@jbsinteriors.com"></div>
+        </div>
+        <button class="btn ghost" onclick="saveBusinessSettings()">Save contact details</button>
+      </div>
+
       <div id="features-list"></div>
       <div class="card" style="margin-top:20px;">
         <h3 style="margin-top:0;">Suggest a new module</h3>
@@ -674,11 +729,13 @@ function showToast(msg){
 }
 
 /* ============ STATE ============ */
-let DATA = { clients:[], quotations:[], projects:[], materials:[], transactions:[], features:[], suggestions:[], users:[] };
+let DATA = { clients:[], quotations:[], projects:[], materials:[], transactions:[], features:[], suggestions:[], users:[], settings:{} };
 
 const DEFAULT_USERS = [
   {id:'u_manager1', name:'Emma', email:'emma@gmail.com', password:'1234', role:'manager', jobTitle:'Owner / Manager', createdAt: Date.now()},
 ];
+
+const DEFAULT_SETTINGS = { businessName: 'JBS Interiors', notifyWhatsapp: '', notifyEmail: '' };
 
 const DEFAULT_FEATURES = [
   {id:'quotations', name:'Quotation Module', desc:'Client quotations with history lookup', on:true, core:true},
@@ -702,12 +759,18 @@ async function loadAll(){
   DATA.suggestions = await load('jbs:suggestions', []);
   DATA.users = await load('jbs:users', null);
   if(!DATA.users || !DATA.users.length){ DATA.users = JSON.parse(JSON.stringify(DEFAULT_USERS)); await save('jbs:users', DATA.users); }
+  DATA.settings = await load('jbs:settings', null) || JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 }
 
 /* ============ PERMISSIONS ============ */
 let currentUser = null;
 function isManager(){ return !!(currentUser && currentUser.role === 'manager'); }
-function restrictedText(){ return '<span class="muted" title="Manager access only">Restricted</span>'; }
+function isAccountant(){ return !!(currentUser && currentUser.role === 'accountant'); }
+function canSeeFinancials(){ return isManager() || isAccountant(); } // net profit & margins
+function canAccessUsers(){ return isManager() || isAccountant(); } // Users & Staff tab
+function restrictedText(){ return '<span class="muted" title="Manager or Accountant access only">Restricted</span>'; }
+function roleLabel(role){ return role==='manager' ? 'Manager' : role==='accountant' ? 'Accountant' : 'Staff'; }
+function roleBadgeClass(role){ return role==='manager' ? 'gold' : role==='accountant' ? 'sage' : 'grey'; }
 
 /* ============ NAV ============ */
 const NAV_ITEMS = [
@@ -969,20 +1032,28 @@ function renderQuotations(){
   let rows = DATA.quotations.slice().sort((a,b)=>b.date.localeCompare(a.date));
   if(search) rows = rows.filter(q=> q.quoteNumber.toLowerCase().includes(search) || (clientById(q.clientId)?.name||'').toLowerCase().includes(search));
   if(filter) rows = rows.filter(q=>q.status===filter);
-  document.getElementById('quotations-body').innerHTML = rows.length ? rows.map(q=>`
-    <tr>
+  document.getElementById('quotations-body').innerHTML = rows.length ? rows.map(q=>{
+    const client = clientById(q.clientId);
+    const hasPhone = !!(client && client.phone && client.phone.replace(/\D/g,'').length>6);
+    const hasEmail = !!(client && client.email && client.email.includes('@'));
+    return `<tr>
       <td><b>${q.quoteNumber}</b></td>
-      <td>${clientById(q.clientId)?.name||'—'}</td>
+      <td>${client?client.name:'—'}</td>
       <td>${q.date}</td>
       <td>${fmt(q.total)}</td>
       <td>${statusBadge(q.status)}</td>
-      <td>
+      <td style="white-space:nowrap;">
         <select class="icon-btn" style="border:1px solid var(--line);border-radius:6px;" onchange="setQuoteStatus('${q.id}', this.value)">
           ${['Draft','Sent','Accepted','Rejected'].map(s=>`<option ${s===q.status?'selected':''}>${s}</option>`).join('')}
         </select>
         <button class="icon-btn" title="New quotation for this client" onclick="openQuoteModal('${q.clientId}')">↻</button>
+        <button class="icon-btn" title="${hasPhone?'Send via WhatsApp':'No phone number on file'}" ${hasPhone?'':'disabled style="opacity:0.35;"'} onclick="sendQuoteWhatsApp('${q.id}')">📱</button>
+        <button class="icon-btn" title="${hasEmail?'Send via email':'No email on file'}" ${hasEmail?'':'disabled style="opacity:0.35;"'} onclick="sendQuoteEmail('${q.id}')">✉️</button>
+        <button class="icon-btn" title="Copy client link" onclick="copyClientLink('${q.id}')">🔗</button>
+        <button class="icon-btn" title="Delete quotation" onclick="deleteQuotation('${q.id}')">🗑</button>
       </td>
-    </tr>`).join('') : `<tr class="empty-row"><td colspan="6">No quotations match — try New quotation above.</td></tr>`;
+    </tr>`;
+  }).join('') : `<tr class="empty-row"><td colspan="6">No quotations match — try New quotation above.</td></tr>`;
 
   document.getElementById('clients-body').innerHTML = DATA.clients.length ? DATA.clients.map(c=>{
     const qc = DATA.quotations.filter(q=>q.clientId===c.id).length;
@@ -998,6 +1069,46 @@ async function setQuoteStatus(id, status){
   await save('jbs:quotations', DATA.quotations);
   renderAll();
 }
+async function deleteQuotation(id){
+  if(!confirm('Delete this quotation? This cannot be undone.')) return;
+  DATA.quotations = DATA.quotations.filter(q=>q.id!==id);
+  await save('jbs:quotations', DATA.quotations);
+  showToast('Quotation deleted');
+  renderAll();
+}
+function clientLinkFor(id){
+  const url = new URL(window.location.href);
+  url.search = ''; url.hash = '';
+  return `${url.toString()}?quote=${id}`;
+}
+function copyClientLink(id){
+  const link = clientLinkFor(id);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(()=>showToast('Client link copied')).catch(()=>promptCopy(link));
+  } else { promptCopy(link); }
+}
+function promptCopy(link){ window.prompt('Copy this link to share with your client:', link); }
+function buildQuoteMessage(q, client){
+  const lines = q.items.map(it => `- ${it.desc || 'Item'}: ${it.qty} x ${fmt(it.price)} = ${fmt(it.qty*it.price)}`).join('\n');
+  return `Hello ${client?.name||''}, here is quotation ${q.quoteNumber} from JBS Interiors:\n\n${lines}\n\nTotal: ${fmt(q.total)}\n\nView it, download a PDF, and approve or reject it here:\n${clientLinkFor(q.id)}\n\nThank you!`;
+}
+function sendQuoteWhatsApp(id){
+  const q = quoteById(id); const client = clientById(q.clientId);
+  if(!client?.phone){ showToast('No phone number on file for this client'); return; }
+  const digits = client.phone.replace(/\D/g,'');
+  const msg = encodeURIComponent(buildQuoteMessage(q, client));
+  window.open(`https://wa.me/${digits}?text=${msg}`, '_blank');
+  if(q.status==='Draft'){ setQuoteStatus(id, 'Sent'); }
+}
+function sendQuoteEmail(id){
+  const q = quoteById(id); const client = clientById(q.clientId);
+  if(!client?.email){ showToast('No email on file for this client'); return; }
+  const subject = encodeURIComponent(`Quotation ${q.quoteNumber} — JBS Interiors`);
+  const body = encodeURIComponent(buildQuoteMessage(q, client));
+  window.location.href = `mailto:${client.email}?subject=${subject}&body=${body}`;
+  if(q.status==='Draft'){ setQuoteStatus(id, 'Sent'); }
+}
+
 
 /* ============ MATERIALS ============ */
 function openMaterialModal(){
@@ -1283,6 +1394,9 @@ function renderUsers(){
 
 /* ============ SETTINGS / FEATURES ============ */
 function renderSettings(){
+  const wEl = document.getElementById('s-whatsapp'), eEl = document.getElementById('s-email');
+  if(wEl && document.activeElement!==wEl) wEl.value = DATA.settings.notifyWhatsapp || '';
+  if(eEl && document.activeElement!==eEl) eEl.value = DATA.settings.notifyEmail || '';
   document.getElementById('features-list').innerHTML = DATA.features.map((f,i)=>`
     <div class="feature-item">
       <div class="fi-left"><div class="fi-icon">${f.name.charAt(0)}</div>
@@ -1293,6 +1407,12 @@ function renderSettings(){
   document.getElementById('suggestions-list').innerHTML = DATA.suggestions.length ? `
     <div class="muted" style="font-size:12px;margin-bottom:6px;">Saved notes:</div>` +
     DATA.suggestions.slice().reverse().map(s=>`<div class="client-history" style="margin-bottom:8px;">${s.text}<br><small class="muted">${new Date(s.date).toLocaleDateString()}</small></div>`).join('') : '';
+}
+async function saveBusinessSettings(){
+  DATA.settings.notifyWhatsapp = document.getElementById('s-whatsapp').value.trim();
+  DATA.settings.notifyEmail = document.getElementById('s-email').value.trim();
+  await save('jbs:settings', DATA.settings);
+  showToast('Contact details saved');
 }
 async function toggleFeature(i){
   DATA.features[i].on = !DATA.features[i].on;
@@ -1377,6 +1497,90 @@ function handleLogout(){
   document.getElementById('login-form').reset();
   document.getElementById('login-error').textContent = '';
 }
+
+/* ============ PUBLIC QUOTE VIEW (client-facing, no login required) ============ */
+async function initPublicQuoteView(id){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('public-quote-view').classList.add('active');
+  const clients = await load('jbs:clients', []);
+  const quotations = await load('jbs:quotations', []);
+  const settings = await load('jbs:settings', null) || DEFAULT_SETTINGS;
+  const quote = quotations.find(q=>q.id===id);
+  const content = document.getElementById('pq-content');
+  if(!quote){
+    content.innerHTML = `<div class="pq-card pq-notfound"><h2>Quotation not found</h2><p class="muted">This link may be out of date. Please contact ${settings.businessName||'us'} directly for an updated quotation.</p></div>`;
+    return;
+  }
+  const client = clients.find(c=>c.id===quote.clientId);
+  renderPublicQuote(quote, client, settings);
+}
+function renderPublicQuote(quote, client, settings){
+  const content = document.getElementById('pq-content');
+  const itemsRows = quote.items.map(it=>`<tr><td>${it.desc||'Item'}</td><td>${it.qty}</td><td>${fmt(it.price)}</td><td>${fmt(it.qty*it.price)}</td></tr>`).join('');
+  const isPending = quote.status==='Draft' || quote.status==='Sent';
+  const actionsHtml = isPending ? `
+    <div class="pq-actions no-print">
+      <button class="btn approve" onclick="respondToQuote('${quote.id}','Accepted')">✓ Approve quotation</button>
+      <button class="btn reject" onclick="respondToQuote('${quote.id}','Rejected')">✕ Reject quotation</button>
+    </div>` : `
+    <div class="pq-response ${quote.status==='Accepted'?'approved':'rejected'} no-print">
+      ${quote.status==='Accepted' ? '✓ You approved this quotation.' : '✕ You rejected this quotation.'}
+    </div>`;
+  content.innerHTML = `
+    <div class="pq-header">
+      <div class="pq-badge">JBS</div>
+      <div><div class="pq-company">${settings.businessName || 'JBS Interiors'}</div><div class="pq-sub">Quotation</div></div>
+    </div>
+    <div class="pq-card">
+      <h1 class="pq-title">Quotation ${quote.quoteNumber}</h1>
+      <div class="pq-status-row">${statusBadge(quote.status)}</div>
+      <div class="pq-meta">
+        <div><div>Prepared for</div><div>${client?client.name:'Client'}</div></div>
+        <div><div>Date</div><div>${quote.date}</div></div>
+      </div>
+      <div class="pq-items">
+        <table>
+          <thead><tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+          <tbody>${itemsRows}</tbody>
+        </table>
+      </div>
+      <div class="pq-total-row"><span class="lbl">Total</span><span class="amt">${fmt(quote.total)}</span></div>
+      ${quote.notes ? `<div class="pq-notes">${quote.notes}</div>` : ''}
+      ${actionsHtml}
+    </div>
+    <div class="pq-actions no-print" style="margin-top:12px;">
+      <button class="btn ghost" onclick="window.print()">⬇ Download PDF</button>
+    </div>
+    <div class="pq-footer-note no-print">This is a secure quotation link generated by ${settings.businessName||'JBS Interiors'}.</div>
+  `;
+}
+async function respondToQuote(id, status){
+  const quotations = await load('jbs:quotations', []);
+  const quote = quotations.find(q=>q.id===id);
+  if(!quote) return;
+  quote.status = status;
+  await save('jbs:quotations', quotations);
+  const clients = await load('jbs:clients', []);
+  const settings = await load('jbs:settings', null) || DEFAULT_SETTINGS;
+  const client = clients.find(c=>c.id===quote.clientId);
+  renderPublicQuote(quote, client, settings);
+  showToast(status==='Accepted' ? 'Thank you — your approval has been recorded.' : 'Your response has been recorded.');
+  // Best-effort real-time notification to the business. This link may be opened
+  // on a different device/browser than the business owner's, so status updates
+  // here don't automatically sync into the owner's own copy of the system —
+  // that would need a real backend. This WhatsApp ping bridges that gap so the
+  // owner still hears about it immediately, then reflects it in their system.
+  if(settings.notifyWhatsapp){
+    const digits = settings.notifyWhatsapp.replace(/\D/g,'');
+    const msg = encodeURIComponent(`Quotation ${quote.quoteNumber} (${fmt(quote.total)}) has been ${status.toUpperCase()} by ${client?client.name:'the client'}.`);
+    window.open(`https://wa.me/${digits}?text=${msg}`, '_blank');
+  }
+}
+(function bootstrapPublicView(){
+  const params = new URLSearchParams(window.location.search);
+  const quoteId = params.get('quote');
+  if(quoteId){ initPublicQuoteView(quoteId); }
+})();
 
 /* ============ INIT ============ */
 async function initApp(){
