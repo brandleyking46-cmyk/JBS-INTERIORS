@@ -14,10 +14,13 @@
 
 ## Client-facing quotation links
 - On the Quotations page, click the link icon next to any quotation to copy a client-facing link (e.g. yoursite.vercel.app?quote=xyz).
-- Opening that link (no login needed) shows the client a clean, branded quote with a real "Download PDF" button, plus Approve/Reject buttons.
+- Opening that link (no login needed) shows the client a full, professional quote document — logo, company details, Bill To, dates, numbered line items, total, notes, terms & conditions, bank details, and a signature line — plus a real "Download PDF" button and Approve/Reject buttons.
+- The document footer shows your own company name and contact details instead of any third-party branding.
+- Fill in company address, bank details, and standard payment terms under Features → "Company details for quotations" — this appears on every quote automatically, so you don't retype it each time.
+- Each quotation now also has an editable "Project description" and "Expiry date" (defaults to your configured validity period, e.g. 14 days).
 - PDFs are generated directly in the browser (via html2pdf.js) rather than through the system print dialog — this avoids the extra URL/date footer that browsers like iOS Safari automatically stamp onto printed pages.
 - The client sees a friendly status label ("Awaiting your response" / "Approved" / "Declined") instead of internal terms like "Draft".
-- Set a WhatsApp number under Features → "Client-facing quotation links" — when a client approves/rejects, it opens a pre-filled WhatsApp message to that number so you're notified right away.
+- Set a WhatsApp number under Features → "Client-approval notifications" — when a client approves/rejects, it opens a pre-filled WhatsApp message to that number so you're notified right away.
 - Important limit: since this app has no backend/database, a client's approval on their own device does not automatically sync into your copy of the system on a different device/browser. The WhatsApp ping is the bridge — you still update the status yourself in your dashboard once notified. True automatic cross-device sync would need a real backend added later.
 
 ## Important: data storage
